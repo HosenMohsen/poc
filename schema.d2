@@ -1,0 +1,43 @@
+direction: right
+
+* {
+  shape: step
+  
+}
+
+(** -- **)[*] {
+  style.stroke-dash: 3
+}
+
+fetch_boards: Récupère les tableaux {
+  icon: https://icons.terrastruct.com/azure%2FGeneral%20Service%20Icons%2FShared%20Dashboard.svg
+} 
+
+fetch_lists_boards: Récupère les listes et tâches {
+  icon: https://icons.terrastruct.com/essentials%2F263-notepad.svg
+}
+
+display_timeline: Affiche une timeline des tâches {
+  icon: https://cdn-icons-png.flaticon.com/512/4127/4127130.png
+}
+
+workflow: Envoies les listes et tâches au workflow n8n {
+  icon: https://icons.terrastruct.com/aws%2FApplication%20Integration%2FAWS-Express-Workflows.svg
+}
+
+aggregate: n8n aggrège la donnée {
+  icon: https://cdn-icons-png.flaticon.com/512/9850/9850807.png
+}
+
+AI_summary: modèle IA fait résumé du projet et l'envoie {
+  icon: https://icons.terrastruct.com/azure%2FAI%20and%20ML%20Service%20Color%2FBatch%20AI.svg
+}
+
+fetch_boards -- fetch_lists_boards 
+
+fetch_lists_boards -- workflow
+fetch_lists_boards --  display_timeline
+
+workflow -- aggregate
+
+aggregate -- AI_summary
