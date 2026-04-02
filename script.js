@@ -43,6 +43,8 @@ createTrelloBoardOptions();
 const form = document.getElementById('trelloForm')
 
 form.addEventListener('submit', async (e) => {
+  let timeline = document.getElementById('timeline');
+  timeline.innerHTML = '';
   e.preventDefault();
   const boardForm = new FormData(form);
   const boardFormValue = boardForm.get('trello-boards');
@@ -59,7 +61,7 @@ form.addEventListener('submit', async (e) => {
     createdAt: trelloIdToDate(card.id)
   }))
 
-const timeline = document.getElementById('timeline');
+ timeline = document.getElementById('timeline');
 
 cardsData.forEach(card => {
   const el = document.createElement('div');
