@@ -85,31 +85,149 @@
       transform: translateY(-1px);
     }
 
+    /* ── Horizontal Timeline ── */
     .timeline {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 12px;
-      margin-top: 12px;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      overflow-x: auto;
+      padding: 80px 24px 32px;
+      gap: 0;
+      margin-top: 8px;
+      scroll-snap-type: x mandatory;
     }
 
-    .timeline-card {
-      background: #f9fbfd;
-      border: 1px solid var(--border);
-      border-left: 5px solid #32a287;
-      border-radius: 12px;
-      padding: 12px;
+    /* central line */
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 104px; /* aligns with dot centres */
+      left: 24px;
+      right: 24px;
+      height: 4px;
+      background: linear-gradient(90deg, #e84393, #f5a623, #f8e71c, #7ed321, #4a90e2, #9013fe);
+      border-radius: 2px;
+      z-index: 0;
     }
 
-    .timeline-card h3 {
-      margin: 8px 0;
-      font-size: 1.05rem;
+    /* each column */
+    .timeline-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 0 0 160px;
+      scroll-snap-align: start;
+      z-index: 1;
     }
 
-    .timeline-card p {
-      margin: 0;
-      color: #3c4c60;
-      line-height: 1.35;
+    /* year label */
+    .timeline-year {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* dot wrapper + tooltip trigger */
+    .timeline-dot-wrap {
+      position: relative;
+      z-index: 2;
+    }
+
+    .timeline-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 3px currentColor, 0 4px 12px rgba(0,0,0,0.18);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin-bottom: 0;
+    }
+
+    .timeline-dot:hover {
+      transform: scale(1.35);
+      box-shadow: 0 0 0 4px currentColor, 0 6px 18px rgba(0,0,0,0.25);
+    }
+
+    /* tooltip */
+    .timeline-tooltip {
+      position: absolute;
+      bottom: calc(100% + 14px);
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      background: #182230;
+      color: #fff;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      padding: 8px 12px;
+      border-radius: 8px;
+      width: 180px;
+      text-align: left;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.18s ease, transform 0.18s ease;
       white-space: pre-wrap;
+      z-index: 999;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+
+    .timeline-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: #182230;
+    }
+
+    .timeline-dot-wrap:hover .timeline-tooltip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* card label below dot */
+    .timeline-label {
+      margin-top: 14px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.2;
+      padding: 0 8px;
+      word-break: break-word;
+    }
+
+    /* ── Loading skeleton ── */
+    @keyframes shimmer {
+      0%   { background-position: -600px 0; }
+      100% { background-position: 600px 0; }
+    }
+
+    .skeleton-line {
+      height: 14px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #dde4ec 25%, #edf1f6 50%, #dde4ec 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.4s infinite linear;
+      margin-bottom: 10px;
+    }
+
+    .skeleton-line.short { width: 55%; }
+    .skeleton-line.medium { width: 80%; }
+    .skeleton-line.long { width: 100%; }
+    .skeleton-title {
+      height: 18px;
+      border-radius: 6px;
+      width: 45%;
+      background: linear-gradient(90deg, #c8d3df 25%, #dde8f0 50%, #c8d3df 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.4s infinite linear;
+      margin-bottom: 16px;
     }
 
     #summarizeBtn {

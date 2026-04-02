@@ -39,7 +39,7 @@ const fetchN8NData = async (group) => {
 
   let raw = n8nRaw.data ?? n8nRaw;
   if (typeof raw === 'string') {
-    try { raw = JSON.parse(raw); } catch (_) { /* c'est déjà du texte brut */ }
+    try { raw = JSON.parse(raw); } catch (_) {  }
   }
 
   if (Array.isArray(raw)) raw = raw[0];
@@ -102,15 +102,27 @@ form.addEventListener('submit', async (e) => {
 
  timeline = document.getElementById('timeline');
 
-cardsData.forEach(card => {
-  const el = document.createElement('div');
-  el.className = 'timeline-card';
-  el.innerHTML = `
-    <div>${card.createdAt.toLocaleString()}</div>
-    <h3>${card.name}</h3>
-    <p>${card.desc || ''}</p>
+const dotColors = [
+  '#e84393', '#f5a623', '#f8e71c', '#7ed321', '#4a90e2', '#9013fe',
+  '#e84393', '#f5a623', '#f8e71c', '#7ed321'
+];
+
+cardsData.forEach((card, index) => {
+  const color = dotColors[index % dotColors.length];
+  const dateStr = card.createdAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+  const descText = card.desc ? card.desc.trim() : 'Aucune description';
+
+  const item = document.createElement('div');
+  item.className = 'timeline-item';
+  item.innerHTML = `
+    <span class="timeline-year">${dateStr}</span>
+    <div class="timeline-dot-wrap">
+      <div class="timeline-dot" style="color:${color};background:${color};"></div>
+      <div class="timeline-tooltip">${descText}</div>
+    </div>
+    <div class="timeline-label">${card.name}</div>
   `;
-  timeline.appendChild(el);
+  timeline.appendChild(item);
 });
 
   const grouped = listsData.map(list => ({
@@ -127,42 +139,55 @@ cardsData.forEach(card => {
   const summarizeBtn = document.getElementById('summarizeBtn');
   summarizeBtn.onclick = () => {
     const panel = document.getElementById('summary-panel');
-    panel.innerHTML = '';
     panel.style.display = 'block';
 
-    const text = typeof summarizeData === 'string' ? summarizeData : JSON.stringify(summarizeData, null, 2);
+    panel.innerHTML = `
+      <div class="skeleton-title"></div>
+      <div class="skeleton-line long"></div>
+      <div class="skeleton-line medium"></div>
+      <div class="skeleton-line long"></div>
+      <div class="skeleton-line short"></div>
+      <br/>
+      <div class="skeleton-title"></div>
+      <div class="skeleton-line long"></div>
+      <div class="skeleton-line medium"></div>
+      <div class="skeleton-line short"></div>
+    `;
 
-    // Affiche chaque bloc séparé par une ligne vide
-    text.split('\n\n').forEach(block => {
-      if (!block.trim()) return;
-      const section = document.createElement('div');
-      section.style.marginBottom = '16px';
+    setTimeout(() => {
+      panel.innerHTML = '';
+      const text = typeof summarizeData === 'string' ? summarizeData : JSON.stringify(summarizeData, null, 2);
 
-      const lines = block.split('\n');
-      // Première ligne = titre du bloc (ex: "Résumé :")
-      if (lines.length > 1 && lines[0].endsWith(':')) {
-        const title = document.createElement('h3');
-        title.style.cssText = 'margin:0 0 6px;color:var(--accent);font-size:1rem;';
-        title.textContent = lines[0];
-        section.appendChild(title);
-        lines.slice(1).forEach(line => {
-          if (!line.trim()) return;
-          const p = document.createElement('p');
-          p.style.margin = '0 0 4px';
-          p.textContent = line;
-          section.appendChild(p);
-        });
-      } else {
-        block.split('\n').forEach(line => {
-          if (!line.trim()) return;
-          const p = document.createElement('p');
-          p.style.margin = '0 0 4px';
-          p.textContent = line;
-          section.appendChild(p);
-        });
-      }
-      panel.appendChild(section);
-    });
+      text.split('\n\n').forEach(block => {
+        if (!block.trim()) return;
+        const section = document.createElement('div');
+        section.style.marginBottom = '16px';
+
+        const lines = block.split('\n');
+        if (lines.length > 1 && lines[0].endsWith(':')) {
+          const title = document.createElement('h3');
+          title.style.cssText = 'margin:0 0 6px;color:var(--accent);font-size:1rem;';
+          title.textContent = lines[0];
+          section.appendChild(title);
+          lines.slice(1).forEach(line => {
+            if (!line.trim()) return;
+            const p = document.createElement('p');
+            p.style.margin = '0 0 4px';
+            p.textContent = line;
+            section.appendChild(p);
+          });
+        } else {
+          block.split('\n').forEach(line => {
+            if (!line.trim()) return;
+            const p = document.createElement('p');
+            p.style.margin = '0 0 4px';
+            p.textContent = line;
+            section.appendChild(p);
+          });
+        }
+        panel.appendChild(section);
+      });
+    }, 1400);
   };
 })
 
