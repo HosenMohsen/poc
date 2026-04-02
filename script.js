@@ -34,9 +34,48 @@ const fetchN8NData = async (group) => {
     body: JSON.stringify(group)
   })
 
-  const n8nData = await n8nResponse.json();
-  console.log(n8nData);
+  const n8nRaw = await n8nResponse.json();
+  console.log('n8nRaw full response:', n8nRaw);
+
+  let raw = n8nRaw.data ?? n8nRaw;
+  if (typeof raw === 'string') {
+    try { raw = JSON.parse(raw); } catch (_) { /* c'est déjà du texte brut */ }
+  }
+
+  if (Array.isArray(raw)) raw = raw[0];
+
+  const toValues = (v) => {
+    if (typeof v === 'string') return v;
+    if (Array.isArray(v)) return v.map((item, i) => `${i + 1}. ${toValues(item)}`).join('\n');
+    if (v && typeof v === 'object') return Object.values(v).map(val => toValues(val)).join('\n');
+    return String(v);
+  };
+
+  const toText = (v) => {
+    if (typeof v === 'string') return v;
+    if (Array.isArray(v)) return v.map((item, i) => `${i + 1}. ${toText(item)}`).join('\n');
+    if (v && typeof v === 'object') {
+      return Object.entries(v).map(([k, val]) => `${k} : ${toText(val)}`).join('\n');
+    }
+    return String(v);
+  };
+
+  if (raw && typeof raw === 'object') {
+    const parts = [];
+    if (raw.resume)                 parts.push('Résumé :\n' + toValues(raw.resume));
+    if (raw.questions_orientations) parts.push('Questions d\'orientation :\n' + toValues(raw.questions_orientations));
+    if (raw.questions)              parts.push('Questions :\n' + toValues(raw.questions));
+    if (parts.length === 0) {
+      Object.entries(raw).forEach(([k, v]) => {
+        parts.push(`${k} :\n${toValues(v)}`);
+      });
+    }
+    return parts.join('\n\n');
+  }
+
+  return String(raw);
 }
+
 
 createTrelloBoardOptions();
 
@@ -82,7 +121,49 @@ cardsData.forEach(card => {
 
   console.log(grouped)
 
-  fetchN8NData(grouped)
+  const summarizeData = await fetchN8NData(grouped);
+  console.log('summarizeData:', summarizeData);
+
+  const summarizeBtn = document.getElementById('summarizeBtn');
+  summarizeBtn.onclick = () => {
+    const panel = document.getElementById('summary-panel');
+    panel.innerHTML = '';
+    panel.style.display = 'block';
+
+    const text = typeof summarizeData === 'string' ? summarizeData : JSON.stringify(summarizeData, null, 2);
+
+    // Affiche chaque bloc séparé par une ligne vide
+    text.split('\n\n').forEach(block => {
+      if (!block.trim()) return;
+      const section = document.createElement('div');
+      section.style.marginBottom = '16px';
+
+      const lines = block.split('\n');
+      // Première ligne = titre du bloc (ex: "Résumé :")
+      if (lines.length > 1 && lines[0].endsWith(':')) {
+        const title = document.createElement('h3');
+        title.style.cssText = 'margin:0 0 6px;color:var(--accent);font-size:1rem;';
+        title.textContent = lines[0];
+        section.appendChild(title);
+        lines.slice(1).forEach(line => {
+          if (!line.trim()) return;
+          const p = document.createElement('p');
+          p.style.margin = '0 0 4px';
+          p.textContent = line;
+          section.appendChild(p);
+        });
+      } else {
+        block.split('\n').forEach(line => {
+          if (!line.trim()) return;
+          const p = document.createElement('p');
+          p.style.margin = '0 0 4px';
+          p.textContent = line;
+          section.appendChild(p);
+        });
+      }
+      panel.appendChild(section);
+    });
+  };
 })
 
 const trelloIdToDate = (id) => {
